@@ -341,6 +341,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_has_clinician_profile: {
+        Args: { _clinician_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_patient_profile: {
+        Args: { _patient_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "clinician" | "patient"
