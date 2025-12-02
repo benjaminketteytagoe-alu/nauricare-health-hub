@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, AlertCircle, ArrowLeft } from "lucide-react";
+import { Heart, AlertCircle, ArrowLeft, Info } from "lucide-react";
 
 const symptoms = [
   "Irregular or absent periods",
@@ -30,6 +30,8 @@ const SymptomChecker = () => {
   const [duration, setDuration] = useState("");
   const [severity, setSeverity] = useState("");
   const [result, setResult] = useState<any>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -62,8 +64,12 @@ const SymptomChecker = () => {
     }
 
     const riskLevel = calculateRiskLevel();
+    setResult({ riskLevel });
+    setStep(3);
+    setIsAnalyzing(true);
 
     try {
+      // Get profile first
       const { data: profileData } = await supabase
         .from("patient_profiles")
         .select("id")
@@ -80,6 +86,23 @@ const SymptomChecker = () => {
         return;
       }
 
+      // Get AI analysis
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('analyze-symptoms', {
+        body: { 
+          symptoms: selectedSymptoms, 
+          duration, 
+          severity 
+        }
+      });
+
+      if (aiError) {
+        console.error("AI analysis error:", aiError);
+        setAiAnalysis("We're unable to provide AI insights at this time, but based on your symptoms, we recommend consulting with a healthcare specialist for personalized guidance.");
+      } else {
+        setAiAnalysis(aiData.analysis);
+      }
+
+      // Save to database
       await supabase.from("symptom_checks").insert({
         patient_id: profileData.id,
         symptoms: {
@@ -90,14 +113,15 @@ const SymptomChecker = () => {
         risk_level: riskLevel,
       });
 
-      setResult({ riskLevel });
-      setStep(3);
     } catch (error: any) {
+      console.error("Error:", error);
       toast({
         title: "Error",
-        description: "Failed to save symptom check. Please try again.",
+        description: "Failed to process symptom check. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -235,6 +259,25 @@ const SymptomChecker = () => {
               </h2>
             </div>
 
+            {isAnalyzing ? (
+              <Card className="p-6 bg-muted/50">
+                <div className="flex items-center justify-center gap-3 py-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <p className="text-muted-foreground">Getting AI-powered health insights...</p>
+                </div>
+              </Card>
+            ) : aiAnalysis && (
+              <Card className="p-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+                <div className="flex items-start gap-3 mb-3">
+                  <Info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <h3 className="font-semibold text-lg">AI Health Insights</h3>
+                </div>
+                <p className="text-sm leading-relaxed whitespace-pre-line text-foreground/90">
+                  {aiAnalysis}
+                </p>
+              </Card>
+            )}
+
             <Card className="p-6 bg-muted/50">
               <h3 className="font-semibold mb-3">What this means:</h3>
               <p className="text-muted-foreground mb-4">
@@ -262,8 +305,19 @@ const SymptomChecker = () => {
               <Button variant="outline" onClick={() => navigate("/learn")} className="w-full h-12">
                 Learn More About PCOS & Fibroids
               </Button>
-              <Button variant="ghost" onClick={() => navigate("/dashboard")} className="w-full">
-                Return to Dashboard
+              <Button 
+                variant="ghost" 
+                onClick={() => {
+                  setStep(1);
+                  setSelectedSymptoms([]);
+                  setDuration("");
+                  setSeverity("");
+                  setResult(null);
+                  setAiAnalysis(null);
+                }} 
+                className="w-full"
+              >
+                Check Symptoms Again
               </Button>
             </div>
           </div>
