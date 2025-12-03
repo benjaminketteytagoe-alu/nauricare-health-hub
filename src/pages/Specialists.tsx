@@ -4,40 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, ArrowLeft, MapPin, Video, User, Building2, Phone } from "lucide-react";
+import { Heart, ArrowLeft, MapPin, Video, User } from "lucide-react";
+import PharmacySearch from "@/components/PharmacySearch";
 
-const partnerPharmacies = [
-  {
-    name: "Kigali Pharmacy",
-    location: "KN 3 Ave, Kigali",
-    phone: "+250 788 123 456",
-    hours: "8:00 AM - 9:00 PM"
-  },
-  {
-    name: "Nyamirambo Pharmacy",
-    location: "KN 72 St, Nyamirambo",
-    phone: "+250 788 234 567",
-    hours: "7:30 AM - 8:00 PM"
-  },
-  {
-    name: "Remera Health Pharmacy",
-    location: "KG 11 Ave, Remera",
-    phone: "+250 788 345 678",
-    hours: "8:00 AM - 10:00 PM"
-  },
-  {
-    name: "Muhima Pharmacy Plus",
-    location: "KN 4 Ave, Muhima",
-    phone: "+250 788 456 789",
-    hours: "7:00 AM - 9:00 PM"
-  },
-  {
-    name: "Kimironko Wellness Pharmacy",
-    location: "KG 549 St, Kimironko",
-    phone: "+250 788 567 890",
-    hours: "8:00 AM - 8:00 PM"
-  }
-];
 
 const Specialists = () => {
   const [specialists, setSpecialists] = useState<any[]>([]);
@@ -179,38 +148,7 @@ const Specialists = () => {
           )}
 
           {/* Partner Pharmacies Section */}
-          <div className="mt-16">
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold mb-3 flex items-center gap-3">
-                <Building2 className="w-8 h-8 text-primary" />
-                Partner Pharmacies in Rwanda
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Get your prescribed medications from our trusted pharmacy partners across Rwanda
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {partnerPharmacies.map((pharmacy, index) => (
-                <Card key={index} className="p-5 hover:shadow-md transition-all">
-                  <h3 className="text-lg font-semibold mb-2">{pharmacy.name}</h3>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{pharmacy.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      <span>{pharmacy.phone}</span>
-                    </div>
-                    <div className="text-xs">
-                      Hours: {pharmacy.hours}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <PharmacySearch />
         </div>
       </main>
     </div>
