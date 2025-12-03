@@ -10,6 +10,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import SymptomChecker from "./pages/SymptomChecker";
 import Specialists from "./pages/Specialists";
+import VideoCall from "./pages/VideoCall";
 import CarePlan from "./pages/CarePlan";
 import Learn from "./pages/Learn";
 import USSD from "./pages/USSD";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/symptom-checker" element={<ProtectedRoute><SymptomChecker /></ProtectedRoute>} />
             <Route path="/specialists" element={<ProtectedRoute><Specialists /></ProtectedRoute>} />
+            <Route path="/video-call/:specialistId" element={<ProtectedRoute><VideoCall /></ProtectedRoute>} />
             <Route path="/care-plan" element={<ProtectedRoute><CarePlan /></ProtectedRoute>} />
             <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
             <Route path="/ussd" element={<ProtectedRoute><USSD /></ProtectedRoute>} />
