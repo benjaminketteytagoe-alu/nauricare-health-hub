@@ -234,6 +234,30 @@ export type Database = {
         }
         Relationships: []
       }
+      drugs: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       patient_profiles: {
         Row: {
           country: string | null
@@ -275,6 +299,87 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pharmacies: {
+        Row: {
+          created_at: string | null
+          hours: string
+          id: string
+          latitude: number
+          location: string
+          longitude: number
+          name: string
+          phone: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          hours: string
+          id?: string
+          latitude: number
+          location: string
+          longitude: number
+          name: string
+          phone: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          hours?: string
+          id?: string
+          latitude?: number
+          location?: string
+          longitude?: number
+          name?: string
+          phone?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      pharmacy_inventory: {
+        Row: {
+          drug_id: string
+          id: string
+          in_stock: boolean | null
+          pharmacy_id: string
+          price_rwf: number | null
+          quantity: number
+          updated_at: string | null
+        }
+        Insert: {
+          drug_id: string
+          id?: string
+          in_stock?: boolean | null
+          pharmacy_id: string
+          price_rwf?: number | null
+          quantity?: number
+          updated_at?: string | null
+        }
+        Update: {
+          drug_id?: string
+          id?: string
+          in_stock?: boolean | null
+          pharmacy_id?: string
+          price_rwf?: number | null
+          quantity?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_inventory_drug_id_fkey"
+            columns: ["drug_id"]
+            isOneToOne: false
+            referencedRelation: "drugs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pharmacy_inventory_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       symptom_checks: {
         Row: {
