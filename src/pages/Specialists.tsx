@@ -6,11 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, ArrowLeft, MapPin, Video, User } from "lucide-react";
 import PharmacySearch from "@/components/PharmacySearch";
+import { BookingDialog } from "@/components/BookingDialog";
 
 
 const Specialists = () => {
   const [specialists, setSpecialists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSpecialist, setSelectedSpecialist] = useState<any>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -125,7 +128,10 @@ const Specialists = () => {
 
                       <div className="flex flex-wrap gap-3">
                         <Button
-                          onClick={() => navigate(`/book-appointment/${specialist.id}`)}
+                          onClick={() => {
+                            setSelectedSpecialist(specialist);
+                            setBookingOpen(true);
+                          }}
                         >
                           Book Appointment
                         </Button>
@@ -151,6 +157,15 @@ const Specialists = () => {
           <PharmacySearch />
         </div>
       </main>
+
+      {/* Booking Dialog */}
+      {selectedSpecialist && (
+        <BookingDialog
+          open={bookingOpen}
+          onOpenChange={setBookingOpen}
+          specialist={selectedSpecialist}
+        />
+      )}
     </div>
   );
 };
