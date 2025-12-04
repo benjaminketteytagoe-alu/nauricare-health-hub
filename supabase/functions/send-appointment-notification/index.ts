@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -15,6 +17,30 @@ interface NotificationRequest {
   appointmentDateTime: string;
   mode: string;
   notes?: string;
+}
+
+async function sendEmail(to: string, subject: string, html: string, attachments?: Array<{ filename: string; content: string }>) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "NauriCare <onboarding@resend.dev>",
+      to: [to],
+      subject,
+      html,
+      attachments,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Resend API error: ${error}`);
+  }
+
+  return response.json();
 }
 
 serve(async (req) => {
@@ -77,23 +103,7 @@ serve(async (req) => {
       clinicianEmail = userData?.user?.email;
     }
 
-    // For now, we'll log the notification details
-    // In production, you would integrate with an email service like Resend
-    console.log("Patient notification:", {
-      to: patientEmail,
-      subject: `Appointment Confirmed with ${specialistName}`,
-      body: `Your ${mode} appointment is scheduled for ${formattedDate} at ${formattedTime}.`,
-    });
-
-    if (clinicianEmail) {
-      console.log("Clinician notification:", {
-        to: clinicianEmail,
-        subject: `New Appointment: ${patientName}`,
-        body: `You have a new ${mode} appointment scheduled for ${formattedDate} at ${formattedTime}.`,
-      });
-    }
-
-    // Generate ICS content for calendar
+    // Generate ICS content for calendar attachment
     const startDate = appointmentDate.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
     const endDate = new Date(appointmentDate.getTime() + 60 * 60 * 1000)
       .toISOString()
@@ -115,17 +125,156 @@ STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;
 
+    // Base64 encode ICS content
+    const icsBase64 = btoa(icsContent);
+
+    // Email HTML templates
+    const patientEmailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #f5a462 0%, #e8916d 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+            .content { background: #fff; padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 12px 12px; }
+            .appointment-card { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+            .detail-row { display: flex; align-items: center; margin: 10px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #888; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Appointment Confirmed!</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${patientName},</p>
+              <p>Your appointment has been successfully booked with <strong>${specialistName}</strong>.</p>
+              
+              <div class="appointment-card">
+                <h3 style="margin-top: 0;">Appointment Details</h3>
+                <div class="detail-row">
+                  <span>📅</span>&nbsp;<strong>${formattedDate}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>🕐</span>&nbsp;<strong>${formattedTime}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>${mode === "telehealth" ? "📹" : "📍"}</span>&nbsp;
+                  <strong>${mode === "telehealth" ? "Video Call" : "In-person Visit"}</strong>
+                </div>
+                ${notes ? `<div class="detail-row"><span>📝</span>&nbsp;${notes}</div>` : ""}
+              </div>
+              
+              ${mode === "telehealth" ? `<p>You'll receive a video call link before your appointment. Make sure you're in a quiet place with a stable internet connection.</p>` : `<p>Please arrive 10 minutes before your scheduled time.</p>`}
+              
+              <p>If you need to reschedule or cancel, please do so at least 24 hours in advance.</p>
+              
+              <div class="footer">
+                <p>Thank you for choosing NauriCare</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const clinicianEmailHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #6b8a7a 0%, #5a7a6a 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+            .content { background: #fff; padding: 30px; border: 1px solid #eee; border-top: none; border-radius: 0 0 12px 12px; }
+            .appointment-card { background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+            .detail-row { display: flex; align-items: center; margin: 10px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #888; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>New Appointment Scheduled</h1>
+            </div>
+            <div class="content">
+              <p>Dear ${specialistName},</p>
+              <p>You have a new appointment scheduled with <strong>${patientName}</strong>.</p>
+              
+              <div class="appointment-card">
+                <h3 style="margin-top: 0;">Appointment Details</h3>
+                <div class="detail-row">
+                  <span>👤</span>&nbsp;<strong>Patient:</strong>&nbsp;${patientName}
+                </div>
+                <div class="detail-row">
+                  <span>📅</span>&nbsp;<strong>${formattedDate}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>🕐</span>&nbsp;<strong>${formattedTime}</strong>
+                </div>
+                <div class="detail-row">
+                  <span>${mode === "telehealth" ? "📹" : "📍"}</span>&nbsp;
+                  <strong>${mode === "telehealth" ? "Video Call" : "In-person Visit"}</strong>
+                </div>
+                ${notes ? `<div class="detail-row"><span>📝</span>&nbsp;<strong>Patient Notes:</strong>&nbsp;${notes}</div>` : ""}
+              </div>
+              
+              <div class="footer">
+                <p>NauriCare Clinician Portal</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const emailResults = [];
+
+    // Send email to patient
+    try {
+      const patientEmailResult = await sendEmail(
+        patientEmail,
+        `✅ Appointment Confirmed with ${specialistName}`,
+        patientEmailHtml,
+        [{ filename: `appointment-${appointmentId}.ics`, content: icsBase64 }]
+      );
+      console.log("Patient email sent:", patientEmailResult);
+      emailResults.push({ recipient: "patient", success: true, result: patientEmailResult });
+    } catch (emailError: any) {
+      console.error("Failed to send patient email:", emailError);
+      emailResults.push({ recipient: "patient", success: false, error: emailError.message });
+    }
+
+    // Send email to clinician if we have their email
+    if (clinicianEmail) {
+      try {
+        const clinicianEmailResult = await sendEmail(
+          clinicianEmail,
+          `📅 New Appointment: ${patientName}`,
+          clinicianEmailHtml,
+          [{ filename: `appointment-${appointmentId}.ics`, content: icsBase64 }]
+        );
+        console.log("Clinician email sent:", clinicianEmailResult);
+        emailResults.push({ recipient: "clinician", success: true, result: clinicianEmailResult });
+      } catch (emailError: any) {
+        console.error("Failed to send clinician email:", emailError);
+        emailResults.push({ recipient: "clinician", success: false, error: emailError.message });
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Notifications sent successfully",
+        message: "Notification emails processed",
+        emailResults,
         appointment: {
           id: appointmentId,
           date: formattedDate,
           time: formattedTime,
           mode,
         },
-        icsContent,
       }),
       {
         status: 200,
