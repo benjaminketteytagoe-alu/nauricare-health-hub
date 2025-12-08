@@ -32,6 +32,16 @@ export const signOut = async () => {
   return { error };
 };
 
+export const signInWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`,
+    },
+  });
+  return { data, error };
+};
+
 export const getCurrentUser = async (): Promise<{ user: User | null; session: Session | null }> => {
   const { data: { session } } = await supabase.auth.getSession();
   return { user: session?.user ?? null, session };
