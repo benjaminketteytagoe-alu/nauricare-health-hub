@@ -9,9 +9,15 @@ import { signIn, signUp } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { Heart } from "lucide-react";
+import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
 
 const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const passwordSchema = z.string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain an uppercase letter")
+  .regex(/[a-z]/, "Password must contain a lowercase letter")
+  .regex(/\d/, "Password must contain a number")
+  .regex(/[!@#$%^&*(),.?":{}|<>]/, "Password must contain a special character");
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -192,12 +198,13 @@ const Auth = () => {
               <Input
                 id="password"
                 type="password"
-                placeholder={isLogin ? "Enter your password" : "Create a password (min. 6 characters)"}
+                placeholder={isLogin ? "Enter your password" : "Create a strong password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="h-12"
               />
+              {!isLogin && <PasswordStrengthIndicator password={password} />}
             </div>
 
             {!isLogin && (
