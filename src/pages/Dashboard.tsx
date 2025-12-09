@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Heart, Calendar, ClipboardList, BookOpen, LogOut, Smartphone, Users } from "lucide-react";
+import { Heart, Calendar, ClipboardList, BookOpen, LogOut, Smartphone, Users, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
+import logoHorizontal from "@/assets/logo-horizontal.png";
 
 const Dashboard = () => {
   const { user, userRole } = useAuth();
@@ -54,14 +55,16 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-accent/20">
       <header className="bg-card shadow-sm border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Heart className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold">NauriCare</h1>
+          <img src={logoHorizontal} alt="NauriCare" className="h-8" />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/settings")}>
+              <Settings className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
           </div>
-          <Button variant="ghost" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
         </div>
       </header>
 
