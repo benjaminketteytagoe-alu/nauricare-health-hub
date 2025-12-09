@@ -258,6 +258,48 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          email_appointments: boolean | null
+          email_care_plan_reminders: boolean | null
+          email_health_tips: boolean | null
+          email_newsletter: boolean | null
+          id: string
+          in_app_appointments: boolean | null
+          in_app_care_plan_reminders: boolean | null
+          in_app_symptom_alerts: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_appointments?: boolean | null
+          email_care_plan_reminders?: boolean | null
+          email_health_tips?: boolean | null
+          email_newsletter?: boolean | null
+          id?: string
+          in_app_appointments?: boolean | null
+          in_app_care_plan_reminders?: boolean | null
+          in_app_symptom_alerts?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_appointments?: boolean | null
+          email_care_plan_reminders?: boolean | null
+          email_health_tips?: boolean | null
+          email_newsletter?: boolean | null
+          id?: string
+          in_app_appointments?: boolean | null
+          in_app_care_plan_reminders?: boolean | null
+          in_app_symptom_alerts?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       patient_profiles: {
         Row: {
           avatar_url: string | null
