@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Heart, Calendar, ClipboardList, BookOpen, LogOut } from "lucide-react";
+import { Heart, Calendar, ClipboardList, BookOpen, LogOut, Smartphone, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
 
 const Dashboard = () => {
   const { user, userRole } = useAuth();
@@ -65,13 +66,21 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        <div className="mb-12">
-          <h2 className="text-4xl font-bold mb-2">
-            Welcome back, {profile.full_name.split(" ")[0]}!
-          </h2>
-          <p className="text-xl text-muted-foreground">
-            How can we support your health today?
-          </p>
+        <div className="mb-12 flex flex-col md:flex-row items-start md:items-center gap-6">
+          <ProfilePictureUpload
+            userId={user?.id || ""}
+            currentAvatarUrl={profile.avatar_url}
+            userName={profile.full_name}
+            onUploadComplete={(url) => setProfile({ ...profile, avatar_url: url })}
+          />
+          <div>
+            <h2 className="text-4xl font-bold mb-2">
+              Welcome back, {profile.full_name.split(" ")[0]}!
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              How can we support your health today?
+            </p>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
@@ -150,8 +159,5 @@ const DashboardCard = ({
     <p className="text-muted-foreground">{description}</p>
   </Card>
 );
-
-// Missing imports
-import { Smartphone, Users } from "lucide-react";
 
 export default Dashboard;
