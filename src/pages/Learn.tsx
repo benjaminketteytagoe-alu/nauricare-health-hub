@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, ArrowLeft, BookOpen, Play, FileText, Download, ExternalLink } from "lucide-react";
+import { Heart, ArrowLeft, BookOpen, Play, FileText, Download, ExternalLink, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-
+import { downloadMaterialPDF } from "@/lib/pdfGenerator";
+import { useState } from "react";
+import { toast } from "sonner";
 const articles = [
   {
     id: "pcos-basics",
@@ -132,7 +134,22 @@ const materials = [
 
 const Learn = () => {
   const navigate = useNavigate();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  const handleDownload = async (materialId: string, title: string) => {
+    setDownloadingId(materialId);
+    try {
+      // Small delay to show loading state
+      await new Promise(resolve => setTimeout(resolve, 300));
+      downloadMaterialPDF(materialId, title);
+      toast.success(`Downloaded ${title}`);
+    } catch (error) {
+      toast.error("Failed to generate PDF. Please try again.");
+      console.error("PDF generation error:", error);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-accent/20">
       <header className="bg-card shadow-sm border-b">
@@ -242,9 +259,18 @@ const Learn = () => {
                       <span className="text-xs text-muted-foreground">
                         {material.type} • {material.pages} pages
                       </span>
-                      <Button size="sm" variant="outline">
-                        <Download className="w-4 h-4 mr-1" />
-                        Download
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleDownload(material.id, material.title)}
+                        disabled={downloadingId === material.id}
+                      >
+                        {downloadingId === material.id ? (
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4 mr-1" />
+                        )}
+                        {downloadingId === material.id ? "Generating..." : "Download"}
                       </Button>
                     </div>
                   </Card>
