@@ -4,6 +4,7 @@ import { ArrowLeft, Settings as SettingsIcon } from "lucide-react";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
 import { ProfilePictureUpload } from "@/components/ProfilePictureUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -67,6 +68,12 @@ const Settings = () => {
 
           {/* Appearance */}
           <ThemeToggle />
+
+          {/* Language */}
+          <LanguageSelector
+            currentLanguage={profile?.language}
+            onLanguageChange={(lang) => setProfile({ ...profile, language: lang })}
+          />
 
           {/* Notification Preferences */}
           <NotificationPreferences />
