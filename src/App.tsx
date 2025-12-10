@@ -15,6 +15,7 @@ import Specialists from "./pages/Specialists";
 import VideoCall from "./pages/VideoCall";
 import CarePlan from "./pages/CarePlan";
 import Learn from "./pages/Learn";
+import Article from "./pages/Article";
 import USSD from "./pages/USSD";
 import Appointments from "./pages/Appointments";
 import Settings from "./pages/Settings";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/video-call/:specialistId" element={<ProtectedRoute><VideoCall /></ProtectedRoute>} />
             <Route path="/care-plan" element={<ProtectedRoute><CarePlan /></ProtectedRoute>} />
             <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
+            <Route path="/article/:articleId" element={<ProtectedRoute><Article /></ProtectedRoute>} />
             <Route path="/ussd" element={<ProtectedRoute><USSD /></ProtectedRoute>} />
             <Route path="/appointments" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
