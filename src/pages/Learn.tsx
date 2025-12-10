@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, ArrowLeft, BookOpen, Play, FileText, Download, ExternalLink, Loader2 } from "lucide-react";
+import { Heart, ArrowLeft, BookOpen, Play, FileText, Download, ArrowRight, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { downloadMaterialPDF } from "@/lib/pdfGenerator";
 import { useState } from "react";
 import { toast } from "sonner";
+import { VideoPlayerDialog } from "@/components/VideoPlayerDialog";
 const articles = [
   {
     id: "pcos-basics",
@@ -135,6 +136,13 @@ const materials = [
 const Learn = () => {
   const navigate = useNavigate();
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<typeof videos[0] | null>(null);
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+
+  const handleVideoClick = (video: typeof videos[0]) => {
+    setSelectedVideo(video);
+    setVideoDialogOpen(true);
+  };
 
   const handleDownload = async (materialId: string, title: string) => {
     setDownloadingId(materialId);
@@ -192,7 +200,11 @@ const Learn = () => {
             <TabsContent value="articles">
               <div className="grid gap-6">
                 {articles.map((article) => (
-                  <Card key={article.id} className="p-6 hover:shadow-lg transition-all">
+                  <Card 
+                    key={article.id} 
+                    className="p-6 hover:shadow-lg transition-all cursor-pointer group"
+                    onClick={() => navigate(`/article/${article.id}`)}
+                  >
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
@@ -201,12 +213,12 @@ const Learn = () => {
                         </div>
                         <h3 className="text-2xl font-bold mb-2">{article.title}</h3>
                       </div>
-                      <BookOpen className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+                      <ArrowRight className="w-6 h-6 text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
                     </div>
                     <p className="text-muted-foreground mb-4">{article.summary}</p>
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/article/${article.id}`); }}>
                       Read Article
-                      <ExternalLink className="w-4 h-4 ml-2" />
+                      <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Card>
                 ))}
@@ -216,14 +228,18 @@ const Learn = () => {
             <TabsContent value="videos">
               <div className="grid md:grid-cols-2 gap-6">
                 {videos.map((video) => (
-                  <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-all">
+                  <Card 
+                    key={video.id} 
+                    className="overflow-hidden hover:shadow-lg transition-all cursor-pointer"
+                    onClick={() => handleVideoClick(video)}
+                  >
                     <div className="relative">
                       <img
                         src={video.thumbnail}
                         alt={video.title}
                         className="w-full h-48 object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
                           <Play className="w-8 h-8 text-primary-foreground ml-1" />
                         </div>
@@ -296,6 +312,12 @@ const Learn = () => {
           </Card>
         </div>
       </main>
+
+      <VideoPlayerDialog
+        video={selectedVideo}
+        open={videoDialogOpen}
+        onOpenChange={setVideoDialogOpen}
+      />
     </div>
   );
 };
